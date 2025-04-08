@@ -4,17 +4,21 @@ const db = require('../config/db');
 const  encargado= db.encargado;
 
 async function getencargados(req, res){
-encargado.findAll()
-.then(result=>{
-res.status(200).send({result})
-}).catch(error=> {
-    res.status(500).send({message:error.message || "Sucedió un errror inesperado"})
-});
+    encargado.findAll({
+        where: { estado: true }
+    })
+    .then(result => {
+        res.status(200).send({ result });
+    })
+    .catch(error => {
+        res.status(500).send({ message: error.message || "Sucedió un error inesperado" });
+    });
 }
 
 const insertencargados = async (req, res) => {
     try {
-        const newencargado = await encargado.create(req.body); 
+        const encargadoData = { ...req.body, estado: true };
+        const newencargado = await encargado.create(encargadoData); 
         res.status(201).json({ message: 'Encargado guardado exitosamente', data: newencargado });
     } catch (error) {
         console.error(error);
@@ -46,9 +50,7 @@ const deleteencargados = async (req, res) => {
 
         const encargadoToDelete = await encargado.findByPk(encargado_id);
         if (encargadoToDelete) {
-            await encargadoToDelete.destroy({ where: { encargado_id } });
-
-            await encargadoToDelete.destroy();
+            await encargadoToDelete.update({ estado: false });
             res.status(200).json({ message: 'Encargado eliminado exitosamente' });
         } else {
             res.status(404).json({ error: 'Encargado no encontrado' });

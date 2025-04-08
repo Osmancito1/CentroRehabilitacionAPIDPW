@@ -6,11 +6,11 @@ const Producto = db.productos;
 
 async function getBodegas(req, res) {
     Bodega.findAll({
+        where: { estado: true },
         include: [{
             model: Producto,
             as: 'producto', 
-            attributes: ['nombre']
-        }]
+            attributes: ['id_producto', 'nombre'],        }]
     })
     .then(result => {
         res.status(200).send({ result });
@@ -22,7 +22,8 @@ async function getBodegas(req, res) {
 
 const insertBodega = async (req, res) => {
     try {
-        const newBodega = await Bodega.create(req.body);
+        const bodegaData = { ...req.body, estado: true };
+        const newBodega = await Bodega.create(bodegaData);
         res.status(201).json({ message: 'Bodega guardada exitosamente', data: newBodega });
     } catch (error) {
         console.error(error);
@@ -54,7 +55,7 @@ const deleteBodega = async (req, res) => {
 
         const bodegaToDelete = await Bodega.findByPk(bodega_id);
         if (bodegaToDelete) {
-            await bodegaToDelete.destroy();
+            await bodegaToDelete.update({ estado: false })
             res.status(200).json({ message: 'Bodega eliminada exitosamente' });
         } else {
             res.status(404).json({ error: 'Bodega no encontrada' });

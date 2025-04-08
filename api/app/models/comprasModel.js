@@ -1,37 +1,37 @@
-'use strict';
+'use strict'
 
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize')	
 
 module.exports = (sequelize) => {
     const attributes = {
-        id_encargado: {
+        id_compra: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true
         },
-        nombre: {
+        fecha: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
+        donante: {
             type: DataTypes.STRING(100),
             allowNull: false
         },
-        apellido: {
-            type: DataTypes.STRING(100),
+        total: {
+            type: DataTypes.FLOAT,
             allowNull: false
-        },
-        telefono: {
-            type: DataTypes.STRING(20)
-        },
-        direccion: {
-            type: DataTypes.TEXT
-        },
+        }, 
         estado: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: true
         }
     };
+
     const options = {
-        tableName: 'encargados',
+        tableName: 'compras',
         timestamps: false
     };
-    return sequelize.define('encargados', attributes, options);
-};
+    return sequelize.define('compras', attributes, options);
+}
+

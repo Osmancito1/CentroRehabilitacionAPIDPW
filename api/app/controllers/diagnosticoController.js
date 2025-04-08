@@ -3,14 +3,15 @@
 const db = require('../config/db');
 const diagnostico= db.diagnostico;
 const Paciente = db.paciente;
-const Terapeuta = db.terapeutas;
+const Terapeuta = db.terapeuta;
 
 async function getDiagnostico(req, res) {
     diagnostico.findAll({
+        where: { estado: true },
         include: [
             {
                 model: Paciente,
-                attributes: ['nombre', 'apellido']
+                attributes: ['nombre', 'apellido', 'fecha_nacimiento']
             },
             {
                 model: Terapeuta,
@@ -28,7 +29,8 @@ async function getDiagnostico(req, res) {
 
 const insertDiagnostico = async (req, res) => {
     try {
-        const newdiagnostico = await diagnostico.create(req.body); 
+        const diagnosticoData = { ...req.body, estado: true };
+        const newdiagnostico = await diagnostico.create(diagnosticoData); 
         res.status(201).json({ message: 'Diagnóstico guardado exitosamente', data: newdiagnostico });
     } catch (error) {
         console.error(error);
@@ -39,7 +41,7 @@ const insertDiagnostico = async (req, res) => {
 const updateDiagnostico = async (req, res) => {
     try {
         const { diagnostico_id } = req.query;
-        const diagnosticoData = req.body;
+        const diagnosticoData = { ...req.body, estado: true };
 
         const diagnosticoToUpdate = await diagnostico.findByPk(diagnostico_id);
         if (diagnosticoToUpdate) {
@@ -60,9 +62,7 @@ const deleteDiagnostico = async (req, res) => {
 
         const diagnosticoToDelete = await diagnostico.findByPk(diagnostico_id);
         if (diagnosticoToDelete) {
-            await diagnosticoToDelete.destroy({ where: { diagnostico_id } });
-
-            await diagnosticoToDelete.destroy();
+            await diagnosticoToDelete.update({ estado: false });
             res.status(200).json({ message: 'Diagnóstico eliminado exitosamente' });
         } else {
             res.status(404).json({ error: 'Diagnóstico no encontrado' });

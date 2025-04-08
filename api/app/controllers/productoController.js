@@ -4,7 +4,9 @@ const db = require('../config/db');
 const  producto= db.productos;
 
 async function getProductos(req, res){
-producto.findAll()
+producto.findAll({
+    where: { estado: true }
+})
 .then(result=>{
 res.status(200).send({result})
 }).catch(error=> {
@@ -14,7 +16,8 @@ res.status(200).send({result})
 
 const insertProductos = async (req, res) => {
     try {
-        const newproducto = await producto.create(req.body); 
+        const productoData = { ... req.body, estado: true }
+        const newproducto = await producto.create(productoData); 
         res.status(201).json({ message: 'Producto guardado exitosamente', data: newproducto });
     } catch (error) {
         console.error(error);
@@ -46,9 +49,7 @@ const deleteProductos = async (req, res) => {
 
         const productoToDelete = await producto.findByPk(producto_id);
         if (productoToDelete) {
-            await productoToDelete.destroy({ where: { producto_id } });
-
-            await productoToDelete.destroy();
+            await productoToDelete.update({ estado: false })
             res.status(200).json({ message: 'Producto eliminado exitosamente' });
         } else {
             res.status(404).json({ error: 'Producto no encontrado' });
@@ -59,9 +60,30 @@ const deleteProductos = async (req, res) => {
     }
 };
 
+const updateProductoStock = async (req, res) => {
+    const { producto_id } = req.query;
+    const { cantidad_a_sumar } = req.body; 
+
+    try {
+    if (cantidad_a_sumar <= 0) {
+        return res.status(400).json({ success: false, message: "Cantidad inválida" });
+    }
+
+    await db.productos.increment('cantidad_disponible', {
+        by: cantidad_a_sumar,
+        where: { id_producto: producto_id }
+    });
+
+    res.json({ success: true });
+    } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports={
     getProductos,
     insertProductos,
     updateProductos,
-    deleteProductos
+    deleteProductos,
+    updateProductoStock
 } 
